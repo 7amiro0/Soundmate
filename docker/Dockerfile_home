@@ -1,0 +1,19 @@
+FROM golang:1.19
+
+ENV BIN_FILE ./home
+ENV CODE_DIR /go/src/
+
+WORKDIR ${CODE_DIR}
+
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download
+
+COPY ./ ${CODE_DIR}
+
+RUN CGO_ENABLED=0 go build \
+        -o ${BIN_FILE} ./cmd/home/*
+
+EXPOSE 8080
+
+CMD ${BIN_FILE}

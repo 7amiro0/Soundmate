@@ -1,0 +1,79 @@
+version: v3
+
+services:
+  authentication:
+    restart: on-failure
+    container_name: authentication
+    ports:
+      - "8000:8000"
+    build:
+      context: ./../
+      dockerfile: ./docker/Dockerfile_authentication
+    depends_on:
+      - migrate
+    environment:
+    # Server
+      - HOST
+      - PORT_AUTHENTICATION
+
+    # Postgres
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - DATABASE_HOST
+      - DATABASE_PORT
+
+  home:
+    restart: on-failure
+    container_name: home
+    ports:
+      - "8080:8080"
+    build:
+      context: ./../
+      dockerfile: ./docker/Dockerfile_home
+    depends_on:
+      - migrate
+    environment:
+      # Server
+      - HOST
+      - PORT_HOME
+
+      # Postgres
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - DATABASE_HOST
+      - DATABASE_PORT
+
+  db:
+    container_name: "db"
+    image: postgres:15.1-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - DATABASE_HOST
+      - DATABASE_PORT
+
+  migrate:
+    container_name: "migrate"
+    restart: on-failure
+    image: migrate/migrate
+    build:
+      context: ./..
+      dockerfile: ./docker/Dockerfile_migrate
+    command: [/opt/migrations/goose, postgres, "host=${DATABASE_HOST} password=${POSTGRES_PASSWORD} port=${DATABASE_PORT} user=${POSTGRES_USER} dbname=${POSTGRES_DB} sslmode=disable", up]
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - home
+      - authentication
