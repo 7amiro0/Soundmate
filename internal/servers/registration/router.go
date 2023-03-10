@@ -1,57 +1,67 @@
 package registration
 
 import (
-	"log"
 	"social_network/internal/storage"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/crypto/bcrypt"
+
+	"crypto/sha256"
+	"encoding/hex"
 )
 
 const (
 	// HTML file
-	loginHTML = "./templates/login.html"
+	loginHTML        = "./templates/login.html"
 	registrationHTML = "./templates/registration.html"
 
 	// Error message for html
 	errEmailOrPassword = "Not correct email or password"
-	errNameRepeat = "This name is already using"
-	errNameNotCorrect = "This name isn't correct"
-	errEmail = "This email is already using"
+	errNameRepeat      = "This name is already using"
+	errNameNotCorrect  = "This name isn't correct"
+	errEmail           = "This email is already using"
 )
 
 type errMessages struct {
 	EmailOrPassword string
-	Name string
-	Email string
+	Name            string
+	Email           string
 }
 
 func hide(data string) ([]byte, error) {
-	return bcrypt.GenerateFromPassword(
-		[]byte(data),
-		bcrypt.DefaultCost,
-	)
+	h := sha256.New()
+	_, err := h.Write([]byte(data))
+	if err != nil {
+		return nil, err
+	}
+
+	dst := make([]byte, hex.EncodedLen(len(h.Sum(nil))))
+
+	hex.Encode(dst, h.Sum(nil))
+	return dst, nil
 }
 
 func (s *Server) registration(c *fiber.Ctx) error {
-	log.Println("sign up")
 	if c.Method() == "GET" {
 		return c.Render(registrationHTML, nil)
 	} else if c.Method() == "POST" {
 		name := strings.TrimSpace(c.FormValue("name"))
-		if len(name) < 4 /*|| !match*/ {
+		if len(name) < 4 {
 			c.SendStatus(fiber.StatusUnprocessableEntity)
-			return c.Render(loginHTML, errMessages{
+			return c.Render(registrationHTML, errMessages{
 				Name: errNameNotCorrect,
 			})
 		}
 
-		users := s.storage.GetByName(name)
+		users, err := s.storage.GetByName(name)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
 		if len(users.Users) != 0 {
 			c.SendStatus(fiber.StatusUnprocessableEntity)
-			return c.Render(loginHTML, errMessages{
+			return c.Render(registrationHTML, errMessages{
 				Name: errNameRepeat,
 			})
 		}
@@ -60,14 +70,18 @@ func (s *Server) registration(c *fiber.Ctx) error {
 		if err != nil {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
-		users = s.storage.GetByEmail(email)
+
+		users, err = s.storage.GetByEmail(email)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
 		if len(users.Users) != 0 {
 			c.SendStatus(fiber.StatusUnprocessableEntity)
-			return c.Render(loginHTML, errMessages{
+			return c.Render(registrationHTML, errMessages{
 				Email: errEmail,
 			})
 		}
-		
+
 		password, err := hide(c.FormValue("password"))
 		if err != nil {
 			return c.SendStatus(fiber.StatusInternalServerError)
@@ -114,14 +128,15 @@ func (s *Server) login(c *fiber.Ctx) error {
 			return err
 		}
 
-		users := s.storage.CheckUsers(email, password)
-		if len(users.Users) == 0 {
+		user, err := s.storage.CheckUsers(email, password)
+		if err != nil {
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		if len(user.Users) == 0 {
 			return c.Render(loginHTML, errMessages{
 				EmailOrPassword: errEmailOrPassword,
 			})
 		}
-
-
 
 		c.Cookie(&fiber.Cookie{
 			Name:     "email",

@@ -12,20 +12,22 @@ const (
 
 type info struct {
 	UserName string
-	// Photo     string
-	// Email    string
 }
 
 func (s *Server) home(c *fiber.Ctx) error {
 	email := c.Cookies("email")
-	// if email == "" {
-		// return c.Redirect("/auth/login")
-	// }
+	if email == "" {
+		return c.Redirect("/auth/login")
+	}
 
-	// user := s.storage.GetByEmail([]byte(email)).Users[0]
+	user, err := s.storage.GetByEmail([]byte(email))
+	if err != nil {
+		c.SendStatus(fiber.StatusInternalServerError)
+		return err
+	}
 
 	return c.Render(homeHTML, info{
-		UserName: "some " + string(email),
+		UserName: "some " + user.Users[0].Name,
 	})
 }
 
@@ -35,9 +37,13 @@ func (s *Server) user(c *fiber.Ctx) error {
 		return c.Redirect("/auth/login")
 	}
 
-	user := s.storage.GetByEmail([]byte(email)).Users[0]
+	user, err := s.storage.GetByEmail([]byte(email))
+	if err != nil {
+		c.SendStatus(fiber.StatusInternalServerError)
+		return err
+	}
 
-	return c.Render(userHTML, info{
-		UserName: user.Name,
+	return c.Render(homeHTML, info{
+		UserName: "some " + user.Users[0].Name,
 	})
 }

@@ -1,30 +1,33 @@
 package registration
 
 import (
-	"social_network/internal/app"
+	"social_network/internal/interfaces"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type Server struct {
-	server *fiber.App
-	storage app.StorageUser
-	addr string
+	server  *fiber.App
+	storage interfaces.StorageUser
+	addr    string
 }
 
-func New(storage app.StorageUser, addr string) *Server {
+func New(storage interfaces.StorageUser, addr string) *Server {
 	serverFiber := fiber.New(fiber.Config{})
 
 	return &Server{
-		server: serverFiber,
+		server:  serverFiber,
 		storage: storage,
-		addr: addr,
+		addr:    addr,
 	}
 }
 
 func (s *Server) setRouter() {
-	s.server.Get("/home", s.home)
-	s.server.Get("/user", s.user)
+	s.server.Get("/auth/login", s.login)
+	s.server.Post("/auth/login", s.login)
+
+	s.server.Get("/auth/registration", s.registration)
+	s.server.Post("/auth/registration", s.registration)
 }
 
 func (s *Server) Connect() error {

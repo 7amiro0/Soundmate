@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	db storage.StorageConfig
+	db     storage.StorageConfig
 	server ServerConfig
 }
 
@@ -31,4 +31,3 @@ func NewConfig() *Config {
 
 	return config
 }
-

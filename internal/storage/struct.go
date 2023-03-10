@@ -6,11 +6,11 @@ import (
 )
 
 type StorageConfig struct {
-	Host string
-	Port string
-	User string
+	Host     string
+	Port     string
+	User     string
 	Password string
-	DBName string 
+	DBName   string
 }
 
 func (s StorageConfig) GetLink() string {
@@ -33,17 +33,12 @@ func (d *StorageConfig) Set() {
 }
 
 type User struct {
-	Name string
-	Email []byte
+	Name     string
+	Email    []byte
 	Password []byte
-	ID uint
+	ID       uint
 }
 
 type Users struct {
 	Users []User
 }
-
-// type Music struct {
-	// title string
-
-// }

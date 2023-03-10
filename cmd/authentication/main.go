@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 	"os/signal"
-	"social_network/internal/server/registration"
+	"social_network/internal/servers/registration"
 	"social_network/internal/storage/user"
 	"syscall"
 )
