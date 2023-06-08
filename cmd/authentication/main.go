@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 	"os/signal"
-	"social_network/internal/servers/registration"
+	"social_network/internal/servers/authentication"
 	"social_network/internal/storage/user"
 	"syscall"
 )
@@ -17,22 +17,32 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
-	userStorage := storage.NewStorageUsers(ctx, config.db)
+	userStorage := user.NewStorageUsers(ctx, config.db)
+	err := userStorage.Connect()
+	if err != nil {
+		log.Fatalln("Cant connect to storage:", err)
+	}
+	defer func() {
+		err = userStorage.Disconnect()
+		if err != nil {
+			log.Fatalln("Cant disconnect storage:", err)
+		}
+	}()
 
-	server := registration.New(
+	server := authentication.New(
 		userStorage,
 		net.JoinHostPort(config.server.host, config.server.port),
 	)
 
-	err := server.Connect()
+	err = server.Connect()
 	if err != nil {
-		log.Fatal("Cant start server:", err)
+		log.Fatalln("Cant start server:", err)
 	}
 
 	<-ctx.Done()
 
 	err = server.Disconnect()
 	if err != nil {
-		log.Fatal("Cant stop server:", err)
+		log.Fatalln("Cant stop server:", err)
 	}
 }

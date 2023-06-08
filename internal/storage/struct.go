@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type StorageConfig struct {
@@ -33,12 +34,34 @@ func (d *StorageConfig) Set() {
 }
 
 type User struct {
-	Name     string
-	Email    []byte
-	Password []byte
-	ID       uint
+	Photo        []byte
+	Email        []byte
+	Password     []byte
+	EncodedPhoto string
+	Name         string
+	Description  string
+	ID           uint
 }
 
 type Users struct {
 	Users []User
+}
+
+func (m Music) GetTitle() string {
+	return m.Title
+}
+
+func (m Music) GetStringID() string {
+	return strconv.Itoa(int(m.ID))
+}
+
+type Music struct {
+	Photo        []byte
+	File         []byte
+	EncodedFile  string
+	EncodedPhoto string
+	Author       string
+	Title        string
+	AuthorID     uint
+	ID           uint
 }

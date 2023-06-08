@@ -1,4 +1,4 @@
-package registration
+package home
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -7,12 +7,8 @@ import (
 const (
 	// HTML file
 	homeHTML = "./templates/home.html"
-	userHTML = "./templates/user.html"
 )
 
-type info struct {
-	UserName string
-}
 
 func (s *Server) home(c *fiber.Ctx) error {
 	email := c.Cookies("email")
@@ -22,28 +18,10 @@ func (s *Server) home(c *fiber.Ctx) error {
 
 	user, err := s.storage.GetByEmail([]byte(email))
 	if err != nil {
-		c.SendStatus(fiber.StatusInternalServerError)
-		return err
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.Render(homeHTML, info{
-		UserName: "some " + user.Users[0].Name,
-	})
-}
-
-func (s *Server) user(c *fiber.Ctx) error {
-	email := c.Cookies("email")
-	if email == "" {
-		return c.Redirect("/auth/login")
-	}
-
-	user, err := s.storage.GetByEmail([]byte(email))
-	if err != nil {
-		c.SendStatus(fiber.StatusInternalServerError)
-		return err
-	}
-
-	return c.Render(homeHTML, info{
-		UserName: "some " + user.Users[0].Name,
+	return c.Render(homeHTML, fiber.Map{
+		"UserName": "some " + user[0].Name,
 	})
 }
