@@ -2,21 +2,46 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Login</title>
-  <style>
-    
-  </style>
+	<title>{{.UserName}}</title>
 </head>
 <body style="background-color: #3c3e49;">
   <div>
     <div>
       <div>
-          {{.UserName}}
+        <div>
+          <p>{{.UserName}}</p>
+        </div>
+      </div>
+    
+      <div>
+        <a href="/user/setting">Setting profile</a>
       </div>
     </div>
     
     <div>
+      <div>
+        <a href="/user/music">Add music</a>
+      </div>
 
+      <div>
+        {{ range $m := .Musics }}
+          <div class="tile">
+            <h3>{{$m.Title}}</h3>
+            <img src="data:image/png;base64,{{$m.EncodedPhoto}}" style="border-radius: 15px; width: 100px;">
+            <audio controls>
+              <source src="data:audio/mpeg;base64,{{$m.EncodedFile}}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        {{ end }}
+      </div>
+    </div>
+
+    <div>
+      <b>Description</b>
+      <p>
+        {{.Description}}
+      </p>
     </div>
   </div>
 </body>

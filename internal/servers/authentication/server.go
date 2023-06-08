@@ -1,4 +1,4 @@
-package registration
+package authentication
 
 import (
 	"social_network/internal/interfaces"
@@ -28,24 +28,16 @@ func (s *Server) setRouter() {
 
 	s.server.Get("/auth/registration", s.registration)
 	s.server.Post("/auth/registration", s.registration)
+
+	s.server.Use(s.NotFound)
 }
 
 func (s *Server) Connect() error {
-	err := s.storage.Connect()
-	if err != nil {
-		return err
-	}
-
 	s.setRouter()
 
 	return s.server.Listen(s.addr)
 }
 
 func (s *Server) Disconnect() error {
-	err := s.storage.Disconnect()
-	if err != nil {
-		return err
-	}
-
 	return s.server.Shutdown()
 }

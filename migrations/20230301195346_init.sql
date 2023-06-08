@@ -6,8 +6,10 @@ create table if not exists users
 (
     id   serial primary key,
     name varchar(20) unique not null,
-    email bytea not null,
-    password bytea not null
+    description varchar(255),
+    email bytea unique not null,
+    password bytea not null,
+    photo bytea
 );
 
 create table if not exists musics
@@ -17,6 +19,7 @@ create table if not exists musics
     title varchar(20) not null,
     author varchar(20) not null,
     music bytea not null,
+    photo bytea not null,
     constraint authorID foreign key(authorID) references users(id),
     constraint author foreign key(author) references users(name)
 );

@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Login</title>
+	<title>Home</title>
   <style>
     
   </style>
@@ -11,12 +11,25 @@
   <div>
     <div>
       <div>
-        <a href="/home/user">
+        <a href="/user">
+          {{if .Photo}}
+            <img src="data:image/jpeg;base64{{.Photo}}">
+          {{else}}
+            <img src="./unknow_user.png">
+          {{end}}
+          
+          
           {{.UserName}}
         </a>
       </div>
 
-
+      <div>
+        <a href="/user/setting">Setting profile</a>
+      </div>
+    
+      <div>
+        <a href="/chat">Chats</a>
+      </div>
     </div>
     
     <div>
